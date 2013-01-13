@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.css"/>
+  <script src ='http://code.jquery.com/jquery-1.8.3.min.js'></script>
+  <script src ='http://mobile.ezoui.com/mobile/res/js/gk/jquery.gk-0.8.2.4.js'></script>
+  <script>
+	$(document).ready(function(){
+		var html = $('body').html();
+		html = $.gk.toHTML(html);
+		$('body').html(html);
+	});
+  </script>
+  <script src ='http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.js'></script>
+</head>
+  <body>
+			<script>
+			  //add item
+			  $.gk.model['btn_add'] ={
+				onclick:function(){
+				  var itemStr = $('#input').val();
+				  $.gk('#itemList').add({'item':itemStr});
+				  $('#input').val('');
+				}
+			  };
+			  //remove item
+			  $.gk.model['itemList'] ={
+				del:function(x){
+				  var record = {'item':$(x).text()};
+				  this.remove(record);
+				}
+			  };
+			</script>
+
+			<page>
+			  <header label='ToDoList'></header>
+			  <content>
+				<input id='input' type="text" placeholder='What needs to be done?'>
+				<btn id='btn_add' label='Add'></btn>
+				<listview id='itemList' >
+				  <template>
+					<li data-icon="delete" data-iconpos="right">
+						<a onclick="$.gk('#itemList').del(this)">${item}</a>
+					</li>
+				  </template>
+				</listview>
+			  </content>
+			</page>
+
+  </body>
+</html>
