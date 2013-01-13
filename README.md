@@ -7,4 +7,5 @@ jQuery Mobile's emphasis on semantic markup and progressive enhancement makes it
 GKMobile strengthened this feature, If you know JQueryMobile, You will be very easy to use.
 
 WebSite: http://goo.gl/mOhVj  
-Youtube: http://www.youtube.com/watch?v=eqy5D5pKC1w  
+Youtube: http://goo.gl/qqmpJ  
+For fun: http://goo.gl/h0cXz  
