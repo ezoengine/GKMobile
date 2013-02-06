@@ -253,13 +253,7 @@ ${content}
   </gk:view>
   <gk:component>
     Column.prototype.init = function(){
-        this.colNum = [
-            'ui-block-a', 
-            'ui-block-b', 
-            'ui-block-c', 
-            'ui-block-d', 
-            'ui-block-e'
-        ];
+        this.colNum = ['ui-block-a','ui-block-b','ui-block-c', 'ui-block-d','ui-block-e'];
         var n = parseInt(this.ele.attr('idx')) - 1;
         $(this.ele).attr('class', this.colNum[n]);
     };
