@@ -404,15 +404,16 @@ $.gk['load'] = function (url, callback) {
     });
 };
 (function ($) {
-    $.fn.gk = function (method, options) {
+    $.fn.gk = function (method) {
         if(arguments.length == 0) {
             return $(this).data(TagLibrary.DATAKEY);
         }
         var firstResult;
+        var options = Array.prototype.slice.call(arguments,1);
         this.each(function (idx, ele) {
             var gkObj = $(ele).data(TagLibrary.DATAKEY);
             if(typeof gkObj != 'undefined' && gkObj[method] != 'undefined') {
-                var result = gkObj[method](options);
+                var result = gkObj[method].apply(gkObj,options);
                 if(idx == 0) {
                     firstResult = result;
                 }
