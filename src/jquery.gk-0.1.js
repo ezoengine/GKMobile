@@ -101,9 +101,17 @@ var TagUtils = (function () {
     function TagUtils() { }
     TagUtils.createDIVWrapper = function createDIVWrapper(html) {
         var fragment = document.createDocumentFragment();
+        var root = document.documentElement;
         var div = document.createElement('div');
+        var tempdiv = document.createElement('div');
         fragment.appendChild(div);
-        div.innerHTML = html;
+        tempdiv.style.display = "none";
+        root.appendChild(tempdiv);
+        tempdiv.innerHTML = html;
+        while(tempdiv.firstChild) {
+            div.appendChild(tempdiv.firstChild);
+        }
+        root.removeChild(tempdiv);
         return div;
     }
     TagUtils.toElement = function toElement(html) {
@@ -189,7 +197,7 @@ var CustomTag = (function () {
         }
         ; ;
         CustomTag.processTagElement = element;
-        CustomTag.customTagElement = TagLibrary.customTags[element.nodeName].cloneNode(true);
+        CustomTag.customTagElement = TagLibrary.customTags[element.nodeName.toUpperCase()].cloneNode(true);
         CustomTag.clazz = $(this.customTagElement).attr(CustomTag.CLASS) || 'WebComponent';
         CustomTag.html = $(this.customTagElement).html();
         if(typeof element.id === 'undefined' || element.id == '') {
@@ -231,6 +239,8 @@ var TagLibrary = (function () {
     TagLibrary.genID = "";
     TagLibrary.customTags = {
     };
+    TagLibrary.customTagStyles = {
+    };
     TagLibrary.gkm = '${content}';
     TagLibrary.DATAKEY = '_gk_';
     TagLibrary.eventStore = [];
@@ -241,7 +251,7 @@ var TagLibrary = (function () {
         return TagLibrary.eventStore['template'][id];
     }
     TagLibrary.isComponent = function isComponent(tagName) {
-        return TagLibrary.customTags[tagName];
+        return TagLibrary.customTags[tagName.toUpperCase()];
     }
     TagLibrary.process = function process(ele) {
         if(ele == null) {
@@ -353,7 +363,7 @@ $.gk['def'] = function (data) {
             var headID = document.getElementsByTagName("head")[0];
             var newScript = document.createElement('script');
             newScript['type'] = 'text/javascript';
-            $(newScript).text(script);
+            newScript['text'] = script;
             headID.appendChild(newScript);
         }
         var view = $(ele).children()[0];
@@ -361,8 +371,31 @@ $.gk['def'] = function (data) {
             $(view).append(TagLibrary.gkm);
         }
         TagLibrary.customTags[tagName] = view;
+        var rg = /<style>(.|\s)*?<\/style>/gi;
+        var match = data.match(rg);
+        if(match && match.length > 0) {
+            var idx = match.length;
+            var reg = /<style>|<\/style>/gi;
+            while(idx > 0) {
+                idx = idx - 1;
+                match[idx] = match[idx].replace(reg, '');
+            }
+            TagLibrary.customTagStyles[tagName] = match;
+        }
+        if(!$.support.leadingWhitespace) {
+            document.createElement(tagName);
+        }
     });
     $.gk['taglib'] = $.gk['taglib'] || new TagLibrary();
+};
+$.gk['tagStyles'] = function (tagName) {
+    var styles;
+    if(tagName) {
+        styles = TagLibrary.customTagStyles[tagName.toUpperCase()] || [];
+    } else {
+        styles = TagLibrary.customTagStyles;
+    }
+    return styles;
 };
 $.gk['load'] = function (url, callback) {
     $.get(url, function (data) {
@@ -372,6 +405,9 @@ $.gk['load'] = function (url, callback) {
 };
 (function ($) {
     $.fn.gk = function (method, options) {
+        if(arguments.length == 0) {
+            return $(this).data(TagLibrary.DATAKEY);
+        }
         var firstResult;
         this.each(function (idx, ele) {
             var gkObj = $(ele).data(TagLibrary.DATAKEY);
