@@ -103,7 +103,7 @@ class TagUtils {
         tempdiv.style.display = "none";
         root.appendChild(tempdiv);
         tempdiv.innerHTML = html;
-        while (tempdiv.firstChild) {
+        while(tempdiv.firstChild) {
             div.appendChild(tempdiv.firstChild);
         }
         root.removeChild(tempdiv);
@@ -320,17 +320,23 @@ $.gk = function(selector?) {
 
 $.gk['model'] = {};
 
+$.gk['deferScript'] = [];
+
 $.gk['toHTML'] = function(html){
     var ele = TagUtils.createDIVWrapper(html);
     TagLibrary.process(ele);
     var str = JSON.stringify(TagLibrary.eventStore['template']);
-    var script = '<script>' + 
-        'TagLibrary.eventStore["template"]=' + 
-        "eval(" + str + ");"+ '</script>';
-    var newGKObj = (TagLibrary.eventStore['script']||[]).join(' ');
-    // output HTML
-    ele.innerHTML = 
-        script + ele.innerHTML+'<script>'+newGKObj+'</script>';
+        
+    if ( !$.support.leadingWhitespace ) {
+        this['deferScript'] = [];
+        this['deferScript'].push('TagLibrary.eventStore["template"]=' + "eval(" + str + ");");
+        this['deferScript'].push((TagLibrary.eventStore['script'] || []).join(' '));
+    } else {
+        var script = '<script>' + 'TagLibrary.eventStore["template"]=' + "eval(" + str + ");" + '</script>';
+        var newGKObj = (TagLibrary.eventStore['script'] || []).join(' ');
+        ele.innerHTML = script + ele.innerHTML + '<script>' + newGKObj + '</script>';
+    }   
+     
     TagLibrary.eventStore['script'] = [];
     return ele;
 }
@@ -424,22 +430,19 @@ $.gk['load'] = function (url, callback) {
     });
 };
 
-(function ($) {
-    $.fn.gk = function (method) {
-        if(arguments.length == 0) {
-            return $(this).data(TagLibrary.DATAKEY);
+(function($) {
+  $.fn.gk = function(method,options) {
+    var firstResult;
+    this.each(function(idx,ele){
+      var gkObj = $(ele).data(TagLibrary.DATAKEY);
+      if(typeof gkObj !='undefined'
+            && gkObj[method]!='undefined'){
+        var result = gkObj[method](options);
+        if(idx==0) {
+          firstResult = result;
         }
-        var firstResult;
-        var options = Array.prototype.slice.call(arguments,1);
-        this.each(function (idx, ele) {
-            var gkObj = $(ele).data(TagLibrary.DATAKEY);
-            if(typeof gkObj != 'undefined' && gkObj[method] != 'undefined') {
-                var result = gkObj[method].apply(gkObj,options);
-                if(idx == 0) {
-                    firstResult = result;
-                }
-            }
-        });
-        return firstResult;
-    };
+      }
+    });
+    return firstResult;
+  };
 })(jQuery);
