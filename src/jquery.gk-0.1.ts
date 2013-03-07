@@ -93,21 +93,33 @@ class WebComponent {
 }
 
 class TagUtils {
+    private static safeDocumentFrag = 
+    document.createDocumentFragment().appendChild(TagUtils.fragDiv);
+    private static fragDiv = document.createElement('div');
+
+    static createElement(tag:string):any {
+        if(!$.support.leadingWhitespace) {
+            document.createElement(tag);
+            safeDocumentFrag['createElement'](tag);
+        }
+    }
 
     static createDIVWrapper(html:string):any {
-        var fragment:DocumentFragment = document.createDocumentFragment();
-        var root = document.documentElement;
-        var div = document.createElement('div');
-        var tempdiv = document.createElement('div');
-        fragment.appendChild(div);
-        tempdiv.style.display = "none";
-        root.appendChild(tempdiv);
-        tempdiv.innerHTML = html;
-        while(tempdiv.firstChild) {
-            div.appendChild(tempdiv.firstChild);
-        }
-        root.removeChild(tempdiv);
+        var div;
+        fragDiv.innerHTML = "<div>" + html + "</div>";
+        fragDiv.removeChild(div = fragDiv.firstChild);
         return div;
+    }
+
+    static cloneNode(element:HTMLElement):any {
+        var clone;
+        if (!$.support.leadingWhitespace) {
+            fragDiv.innerHTML = element.outerHTML;
+            fragDiv.removeChild(clone = fragDiv.firstChild);
+        } else {
+            clone = element.cloneNode(true);
+        }
+        return clone;
     }
 
     static toElement(html:string):any{
@@ -189,7 +201,7 @@ class CustomTag {
         if(typeof element ==='undefined') {return;};
         processTagElement = element;
         //
-        customTagElement = TagLibrary.customTags[element.nodeName.toUpperCase()].cloneNode(true);
+        CustomTag.customTagElement = TagUtils.cloneNode(TagLibrary.customTags[element.nodeName.toUpperCase()]);
         clazz = $(this.customTagElement).attr(CLASS) || 'WebComponent';
         html = $(this.customTagElement).html();
         //prepare script 
@@ -223,7 +235,6 @@ class TagLibrary  {
     static serial:number;
     static genID:string;
     static customTags:Object = {};
-    static customTagStyles:Object = {};
     private static gkm:string = '${content}';
     static DATAKEY:string = '_gk_';
     static eventStore:any = [];
@@ -320,23 +331,21 @@ $.gk = function(selector?) {
 
 $.gk['model'] = {};
 
-$.gk['deferScript'] = [];
-
 $.gk['toHTML'] = function(html){
     var ele = TagUtils.createDIVWrapper(html);
     TagLibrary.process(ele);
     var str = JSON.stringify(TagLibrary.eventStore['template']);
-        
-    if ( !$.support.leadingWhitespace ) {
-        this['deferScript'] = [];
-        this['deferScript'].push('TagLibrary.eventStore["template"]=' + "eval(" + str + ");");
-        this['deferScript'].push((TagLibrary.eventStore['script'] || []).join(' '));
-    } else {
-        var script = '<script>' + 'TagLibrary.eventStore["template"]=' + "eval(" + str + ");" + '</script>';
-        var newGKObj = (TagLibrary.eventStore['script'] || []).join(' ');
-        ele.innerHTML = script + ele.innerHTML + '<script>' + newGKObj + '</script>';
-    }   
-     
+    var script = "";
+    
+    if (str !== "{}") {
+        script = '<script>' + 'TagLibrary.eventStore["template"]=' + "eval(" + str + ");" + '</script>';
+    }
+    if (!$.support.leadingWhitespace && script) {
+        var id = '_gk_' + TagLibrary['serial']++;
+        script = '<div id="' + id + '" style="display:none">for old IE</div>' + '<script>$("#' + id + '").remove();</script>' + script;
+    }
+    var newGKObj = (TagLibrary.eventStore['script'] || []).join(' ');
+    ele.innerHTML = script + ele.innerHTML + '<script>' + newGKObj + '</script>';
     TagLibrary.eventStore['script'] = [];
     return ele;
 }
@@ -392,36 +401,10 @@ $.gk['def'] = function(data){
         $(view).append(TagLibrary.gkm);
     }
     TagLibrary.customTags[tagName] = view;
-    
-    var rg = /<style>(.|\s)*?<\/style>/gi;
-    var match = data.match(rg);
-    if ( match && match.length > 0 ) {
-        var idx = match.length;
-        var reg = /<style>|<\/style>/gi;
-        while ( idx > 0 ) {
-            idx = idx - 1;
-            match[idx] = match[idx].replace(reg, '');
-        }
-        TagLibrary.customTagStyles[tagName] = match;
-    }
-    
-    if ( !$.support.leadingWhitespace ) {
-        document.createElement(tagName);
-    }
-    
+    TagUtils.createElement(tagName);
     });
     $.gk['taglib'] = $.gk['taglib'] || new TagLibrary();
 }
-
-$.gk['tagStyles'] = function (tagName) {
-    var styles;
-    if ( tagName ) {
-        styles = TagLibrary.customTagStyles[tagName.toUpperCase()] || [];
-    } else {
-        styles = TagLibrary.customTagStyles;
-    }
-    return styles;
-};
 
 $.gk['load'] = function (url, callback) {
     $.get(url, function (data) {
@@ -436,11 +419,11 @@ $.gk['load'] = function (url, callback) {
             return $(this).data(TagLibrary.DATAKEY);
         }
         var firstResult;
-        var options = Array.prototype.slice.call(arguments,1);
+        var options = Array.prototype.slice.call(arguments, 1);
         this.each(function (idx, ele) {
             var gkObj = $(ele).data(TagLibrary.DATAKEY);
             if(typeof gkObj != 'undefined' && gkObj[method] != 'undefined') {
-                var result = gkObj[method].apply(gkObj,options);
+                var result = gkObj[method].apply(gkObj, options);
                 if(idx == 0) {
                     firstResult = result;
                 }

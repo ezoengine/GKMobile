@@ -99,20 +99,29 @@ var WebComponent = (function () {
 })();
 var TagUtils = (function () {
     function TagUtils() { }
-    TagUtils.createDIVWrapper = function createDIVWrapper(html) {
-        var fragment = document.createDocumentFragment();
-        var root = document.documentElement;
-        var div = document.createElement('div');
-        var tempdiv = document.createElement('div');
-        fragment.appendChild(div);
-        tempdiv.style.display = "none";
-        root.appendChild(tempdiv);
-        tempdiv.innerHTML = html;
-        while(tempdiv.firstChild) {
-            div.appendChild(tempdiv.firstChild);
+    TagUtils.safeDocumentFrag = document.createDocumentFragment().appendChild(TagUtils.fragDiv);
+    TagUtils.fragDiv = document.createElement('div');
+    TagUtils.createElement = function createElement(tag) {
+        if(!$.support.leadingWhitespace) {
+            document.createElement(tag);
+            TagUtils.safeDocumentFrag['createElement'](tag);
         }
-        root.removeChild(tempdiv);
+    }
+    TagUtils.createDIVWrapper = function createDIVWrapper(html) {
+        var div;
+        TagUtils.fragDiv.innerHTML = "<div>" + html + "</div>";
+        TagUtils.fragDiv.removeChild(div = TagUtils.fragDiv.firstChild);
         return div;
+    }
+    TagUtils.cloneNode = function cloneNode(element) {
+        var clone;
+        if(!$.support.leadingWhitespace) {
+            TagUtils.fragDiv.innerHTML = element.outerHTML;
+            TagUtils.fragDiv.removeChild(clone = TagUtils.fragDiv.firstChild);
+        } else {
+            clone = element.cloneNode(true);
+        }
+        return clone;
     }
     TagUtils.toElement = function toElement(html) {
         var _div = TagUtils.createDIVWrapper(html);
@@ -197,7 +206,7 @@ var CustomTag = (function () {
         }
         ; ;
         CustomTag.processTagElement = element;
-        CustomTag.customTagElement = TagLibrary.customTags[element.nodeName.toUpperCase()].cloneNode(true);
+        CustomTag.customTagElement = TagUtils.cloneNode(TagLibrary.customTags[element.nodeName.toUpperCase()]);
         CustomTag.clazz = $(this.customTagElement).attr(CustomTag.CLASS) || 'WebComponent';
         CustomTag.html = $(this.customTagElement).html();
         if(typeof element.id === 'undefined' || element.id == '') {
@@ -238,8 +247,6 @@ var TagLibrary = (function () {
     TagLibrary.serial = 0;
     TagLibrary.genID = "";
     TagLibrary.customTags = {
-    };
-    TagLibrary.customTagStyles = {
     };
     TagLibrary.gkm = '${content}';
     TagLibrary.DATAKEY = '_gk_';
@@ -323,20 +330,20 @@ $.gk = function (selector) {
 };
 $.gk['model'] = {
 };
-$.gk['deferScript'] = [];
 $.gk['toHTML'] = function (html) {
     var ele = TagUtils.createDIVWrapper(html);
     TagLibrary.process(ele);
     var str = JSON.stringify(TagLibrary.eventStore['template']);
-    if(!$.support.leadingWhitespace) {
-        this['deferScript'] = [];
-        this['deferScript'].push('TagLibrary.eventStore["template"]=' + "eval(" + str + ");");
-        this['deferScript'].push((TagLibrary.eventStore['script'] || []).join(' '));
-    } else {
-        var script = '<script>' + 'TagLibrary.eventStore["template"]=' + "eval(" + str + ");" + '</script>';
-        var newGKObj = (TagLibrary.eventStore['script'] || []).join(' ');
-        ele.innerHTML = script + ele.innerHTML + '<script>' + newGKObj + '</script>';
+    var script = "";
+    if(str !== "{}") {
+        script = '<script>' + 'TagLibrary.eventStore["template"]=' + "eval(" + str + ");" + '</script>';
     }
+    if(!$.support.leadingWhitespace && script) {
+        var id = '_gk_' + TagLibrary['serial']++;
+        script = '<div id="' + id + '" style="display:none">for old IE</div>' + '<script>$("#' + id + '").remove();</script>' + script;
+    }
+    var newGKObj = (TagLibrary.eventStore['script'] || []).join(' ');
+    ele.innerHTML = script + ele.innerHTML + '<script>' + newGKObj + '</script>';
     TagLibrary.eventStore['script'] = [];
     return ele;
 };
@@ -378,31 +385,9 @@ $.gk['def'] = function (data) {
             $(view).append(TagLibrary.gkm);
         }
         TagLibrary.customTags[tagName] = view;
-        var rg = /<style>(.|\s)*?<\/style>/gi;
-        var match = data.match(rg);
-        if(match && match.length > 0) {
-            var idx = match.length;
-            var reg = /<style>|<\/style>/gi;
-            while(idx > 0) {
-                idx = idx - 1;
-                match[idx] = match[idx].replace(reg, '');
-            }
-            TagLibrary.customTagStyles[tagName] = match;
-        }
-        if(!$.support.leadingWhitespace) {
-            document.createElement(tagName);
-        }
+        TagUtils.createElement(tagName);
     });
     $.gk['taglib'] = $.gk['taglib'] || new TagLibrary();
-};
-$.gk['tagStyles'] = function (tagName) {
-    var styles;
-    if(tagName) {
-        styles = TagLibrary.customTagStyles[tagName.toUpperCase()] || [];
-    } else {
-        styles = TagLibrary.customTagStyles;
-    }
-    return styles;
 };
 $.gk['load'] = function (url, callback) {
     $.get(url, function (data) {
