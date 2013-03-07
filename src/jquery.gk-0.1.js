@@ -99,8 +99,8 @@ var WebComponent = (function () {
 })();
 var TagUtils = (function () {
     function TagUtils() { }
-    TagUtils.safeDocumentFrag = document.createDocumentFragment().appendChild(TagUtils.fragDiv);
     TagUtils.fragDiv = document.createElement('div');
+    TagUtils.safeDocumentFrag = document.createDocumentFragment().appendChild(TagUtils.fragDiv);
     TagUtils.createElement = function createElement(tag) {
         if(!$.support.leadingWhitespace) {
             document.createElement(tag);
@@ -414,3 +414,8 @@ $.gk['load'] = function (url, callback) {
         return firstResult;
     };
 })(jQuery);
+$(document).ready(function () {
+    $('[gk-app]').each(function (idx, ele) {
+        $(ele).html($.gk['toHTML']($(ele).html()));
+    });
+});

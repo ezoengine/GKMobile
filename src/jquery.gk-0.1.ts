@@ -93,9 +93,9 @@ class WebComponent {
 }
 
 class TagUtils {
+    private static fragDiv = document.createElement('div');
     private static safeDocumentFrag = 
     document.createDocumentFragment().appendChild(TagUtils.fragDiv);
-    private static fragDiv = document.createElement('div');
 
     static createElement(tag:string):any {
         if(!$.support.leadingWhitespace) {
@@ -432,3 +432,8 @@ $.gk['load'] = function (url, callback) {
         return firstResult;
     };
 })(jQuery);
+$(document).ready(function(){
+    $('[gk-app]').each(function(idx,ele){
+        $(ele).html($.gk['toHTML']($(ele).html()));
+    });
+});
