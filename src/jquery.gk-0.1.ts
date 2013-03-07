@@ -389,7 +389,7 @@ $.gk['def'] = function(data){
     if($(ele).children().length == 2) {
         var scriptHead = "var " + clazz + " = (function (_super) {__extends(" + clazz + ", _super);function " + clazz + "(id) {_super.call(this, id);} ";
         var scriptFooter = "return " + clazz + ";})(WebComponent);";
-        var script = $($(ele).children()[1]).text();
+        var script = $($(ele).children()[1]).html();
         script = scriptHead + script + scriptFooter;
         var headID = document.getElementsByTagName("head")[0];
         var newScript = document.createElement('script');
