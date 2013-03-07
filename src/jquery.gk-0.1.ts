@@ -94,9 +94,8 @@ class WebComponent {
 
 class TagUtils {
     private static fragDiv = document.createElement('div');
-    private static safeDocumentFrag = 
-    document.createDocumentFragment().appendChild(TagUtils.fragDiv);
-
+    private static safeDocumentFrag = document.createDocumentFragment();
+ 
     static createElement(tag:string):any {
         if(!$.support.leadingWhitespace) {
             document.createElement(tag);
@@ -189,6 +188,8 @@ class TagUtils {
     }
 
 }
+TagUtils.safeDocumentFrag.appendChild(TagUtils.fragDiv);
+
 ///////////////////////////////////////////////////////////////////////////////
 class CustomTag {
     private static clazz:string;

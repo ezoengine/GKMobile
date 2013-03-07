@@ -1,61 +1,3 @@
-<gk:element name='Nav'>
-  <gk:view>
-   <div class='navbar navbar-inverse navbar-fixed-top'>
-      <div class='navbar-inner'>
-	<div class='container' style='font-size:1rem;'>
-	  <div class='nav-collapse collapse'>
-	    <ul class='nav'>
-	      <li class='${home}'>
-		<a href='./index.html'>
-		  Home</a>
-	      </li>
-	      <li class='${getstarted}'>
-		<a href='./getstarted.html'>
-		  Get Started</a>
-	      </li>
-	      <li class='${play}'>
-		<a href='./play.html'>
-		  Play</a>
-	      </li>
-	      <li class='${api}'>
-		<a href='./api.html'>
-		  API</a>
-	      </li>
-	      <li class='${component}'>
-		<a href='./jqueryMobileTmpl.html'>
-		  Component</a>
-	      </li>
-	      <li class='${pattern}'>
-		<a href='./pattern.html'>
-		  Pattern</a>
-	      </li>
-	      <!--
-	      <li class='${license}'>
-		<a href='./license.html'>
-		  License</a>
-	      </li>
-	      -->
-	    </ul>
-	  </div>
-	</div>
-      </div>
-    </div>
-  </gk:view>
-</gk:element>
-
-
-<gk:element name='GMap' >
-  <gk:view use='GMap'>
-    <div style='${style}'>
-      <div id='${id}' style='${style}' zoom='${zoom}' 
-	 type='${type}' data-gk-click='${onclick}'></div>
-      <div >${gkm}</div>
-    </div>
-  </gk:view>
-</gk:element>
-
-
-
 <gk:element name='Page'>
   <gk:view>
     <div id='${id}' data-role='page'>${content}</div>
@@ -178,9 +120,14 @@ ${content}
 <gk:element name='Text'>
   <gk:view use='Text'>
   <label for='name'>${label}</label>
-  <input id='${id}' type='text' name='${name}' value='${value}' readonly/>
+  <input id='${id}' type='text' name='${name}' value='${value}'/>
   </gk:view>
   <gk:component>
+    Text.prototype.init = function(){
+      if(this.ele.attr('value')==='${value}'){
+	this.ele.removeAttr('value');
+      }
+    };
     Text.prototype.value = function (v) {
         if(v) {
             return $(this.ele).val(v);
@@ -247,13 +194,19 @@ ${content}
 
 <gk:element name='Column'>
   <gk:view use='Column'>
-        <div id='${id}' idx='${idx}' >
-                ${content}
-        </div>
+    <div id='${id}' idx='${idx}'>
+      ${content}
+    </div>
   </gk:view>
   <gk:component>
     Column.prototype.init = function(){
-        this.colNum = ['ui-block-a','ui-block-b','ui-block-c', 'ui-block-d','ui-block-e'];
+        this.colNum = [
+            'ui-block-a', 
+            'ui-block-b', 
+            'ui-block-c', 
+            'ui-block-d', 
+            'ui-block-e'
+        ];
         var n = parseInt(this.ele.attr('idx')) - 1;
         $(this.ele).attr('class', this.colNum[n]);
     };
@@ -350,8 +303,11 @@ ${content}
         $($(this.ele).children()[0]).attr('src', file);
     };
     Icon.prototype.count = function(i){
+    if(i){
       this.ele.prev().css('display',i==0? 'none':'');
+      this._count = i;
       this.ele.prev().html(''+i);
+    }else { return this._count;};
     };
   </gk:component>
 </gk:element>

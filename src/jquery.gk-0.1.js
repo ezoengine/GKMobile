@@ -100,7 +100,7 @@ var WebComponent = (function () {
 var TagUtils = (function () {
     function TagUtils() { }
     TagUtils.fragDiv = document.createElement('div');
-    TagUtils.safeDocumentFrag = document.createDocumentFragment().appendChild(TagUtils.fragDiv);
+    TagUtils.safeDocumentFrag = document.createDocumentFragment();
     TagUtils.createElement = function createElement(tag) {
         if(!$.support.leadingWhitespace) {
             document.createElement(tag);
@@ -193,6 +193,7 @@ var TagUtils = (function () {
     }
     return TagUtils;
 })();
+TagUtils.safeDocumentFrag.appendChild(TagUtils.fragDiv);
 var CustomTag = (function () {
     function CustomTag() { }
     CustomTag.clazz = "";
