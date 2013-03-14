@@ -318,5 +318,13 @@ ${content}
       this.ele.prev().html(''+i);
     }else { return this._count;};
     };
+	Icon.prototype.text = function(txt){
+	  if(txt){
+		var text = this.ele[0].nextSibling;
+		text.innerHTML = txt;
+	  }else{
+	  	return text.innerHTML;
+	  }
+	}
   </gk:component>
 </gk:element>
