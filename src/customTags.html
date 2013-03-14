@@ -6,8 +6,6 @@
 </gk:element>
 
 
-
-
 <gk:element name='Header'>
   <gk:view use='Header'>
     <div id='${id}' data-gk-click='${onclick}' data-position='fixed' data-theme='a' data-role='header' style='font-size:16px;text-align:center;'>
@@ -26,7 +24,6 @@
     };
   </gk:component>
 </gk:element>
-
 
 
 
@@ -148,8 +145,8 @@ ${content}
 
 
 
-<gk:element name='Date'>
-  <gk:view use='Date'>
+<gk:element name='date'>
+  <gk:view use='date'>
     <label for='${name}'>${label}</label>
     <input id='${id}' name='${name}' type='date' 
 	data-role='datebox' data-options="{'mode': 'calbox'}"
@@ -249,10 +246,10 @@ ${content}
         }
     };
     Btn.prototype.visible = function (b) {
-        if(arguments.length < 0) {
-            b ? this.ele.parent().show() : this.ele.parent().hide();
-        } else {
+        if(arguments.length == 0) {
             return this.ele.parent().is(':visible');
+        } else {
+            b ? this.ele.parent().show() : this.ele.parent().hide();
         }
     };
   </gk:component>
