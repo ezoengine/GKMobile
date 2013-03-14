@@ -10,15 +10,17 @@
 <gk:element name='Header'>
   <gk:view use='Header'>
     <div id='${id}' data-gk-click='${onclick}' data-position='fixed' data-theme='a' data-role='header' style='font-size:16px;text-align:center;'>
-    <div style='margin:13px 0 0 0'>${label}</div>${content}</div>
+    	<div style='margin:10px 0 10px 0'>${label}</div>${content}
+	</div>
   </gk:view>
   <gk:component>
-    Header.prototype.label = function (lab) {
+    Header.prototype.label = function(lab) {
       if(lab) {
-	  this.ele.children(1).html(lab);
-	  return this.ele;
-	} else {
-	  return this.ele.children(1).html();
+		var ele = this.ele.find('div')[0];
+		ele.innerHTML = lab;
+		return this.ele;
+	  } else {
+	  	return this.ele.children(1).html();
       }
     };
   </gk:component>
@@ -27,10 +29,12 @@
 
 
 
+
 <gk:element name='Content'>
   <gk:view>
     <div id='${id}' style='padding:15px' data-role='content'>${content}</div>
   </gk:view>
+  <gk:component></gk:component>
 </gk:element>
 
 
@@ -38,8 +42,9 @@
 
 <gk:element name='Footer'>
   <gk:view>
-<div id='${id}' data-position='fixed' data-theme='a' data-role='footer'>${content}</div>
+<div id='${id}' data-position='fixed' data-theme='a' data-role='footer'  style='font-size:16px;text-align:center;'>${content}</div>
   </gk:view>
+  <gk:component></gk:component>
 </gk:element>
 
 
@@ -52,6 +57,7 @@
 <h3 class='ui-li-heading'>${heading}</h3>${content}</div>
 </li>
   </gk:view>
+  <gk:component></gk:component>
 </gk:element>
 
 
@@ -148,6 +154,7 @@ ${content}
 	data-role='datebox' data-options="{'mode': 'calbox'}"
 	value='${value}' data-gk-blur='${onblur}' />
   </gk:view>
+  <gk:component></gk:component>
 </gk:element>
 
 
@@ -158,6 +165,7 @@ ${content}
     <label for='password'>${label}</label>
     <input id='${id}' type='password' name='${name}' value='${value}' />
   </gk:view>
+  <gk:component></gk:component>
 </gk:element>
 
 
@@ -170,6 +178,7 @@ ${content}
 <textarea cols='40' rows='8' name='${name}' id='${id}'></textarea>
 </div>     
   </gk:view>
+  <gk:component></gk:component>
 </gk:element>
 
 
@@ -218,7 +227,7 @@ ${content}
 
 <gk:element name='Btn'>
   <gk:view use='Btn'>
-<a id='${id}' href='#' type='button' value='${value}' data-inline='${inline}' data-gk-click='${onclick}' data-icon='${icon}'>${label}</a>
+	<a id='${id}' href='#' type='button' value='${value}' data-inline='${inline}' data-gk-click='${onclick}' data-icon='${icon}'>${label}</a>
   </gk:view>
   <gk:component>
     Btn.prototype.init = function(){
@@ -239,7 +248,7 @@ ${content}
         }
     };
     Btn.prototype.visible = function (b) {
-        if(arguments.length>0) {
+        if(arguments.length < 0) {
             b ? this.ele.parent().show() : this.ele.parent().hide();
         } else {
             return this.ele.parent().is(':visible');
@@ -255,6 +264,7 @@ ${content}
   <gk:view use='BackBtn'>
 <a data-icon='back' data-rel='back' href='#home' class='ui-btn-${pos}'>${label}</a>
   </gk:view>
+  <gk:component></gk:component>
 </gk:element>
 
 
@@ -266,6 +276,7 @@ ${content}
 <ul>${content}</ul>
 </div>
   </gk:view>
+  <gk:component></gk:component>
 </gk:element>
 
 
