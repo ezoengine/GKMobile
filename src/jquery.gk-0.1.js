@@ -12,7 +12,25 @@ var WebComponent = (function () {
         this.bindEvent();
     }
     WebComponent.gkm = "";
+    WebComponent.prototype._init = function () {
+    };
     WebComponent.prototype.init = function () {
+    };
+    WebComponent.prototype.removeDefAttr = function (ele, attr) {
+        if(arguments.length == 1) {
+            attr = ele;
+            ele = this.ele;
+        }
+        if(typeof attr === 'string') {
+            attr = [
+                attr
+            ];
+        }
+        for(var i in attr) {
+            if('${' + attr[i] + '}' === this.ele.attr(attr[i])) {
+                this.ele.removeAttr(attr[i]);
+            }
+        }
     };
     WebComponent.prototype.replaceAttr = function (key, srcVal, repVal) {
         if(this.ele.attr(key) == srcVal) {
@@ -217,7 +235,9 @@ var CustomTag = (function () {
         TagLibrary.eventStore['script'].push(script);
         var newHTML = CustomTag.html;
         var repHTML = TagUtils.innerHTML(this.processTagElement);
-        window[CustomTag.clazz].gkm = repHTML;
+        if(window[CustomTag.clazz]) {
+            window[CustomTag.clazz].gkm = repHTML;
+        }
         newHTML = newHTML.replace(TagLibrary.gkm, repHTML);
         $.each(this.processTagElement.attributes, function (idx, att) {
             var regex = new RegExp('\\${' + att.nodeName + '}', "g");
@@ -360,6 +380,7 @@ $.gk['com'] = function (id, obj) {
                 }
             }
         }
+        obj['_init']();
         obj['init']();
     } else {
         return $('#' + id).data(TagLibrary.DATAKEY);
@@ -421,14 +442,27 @@ $.gk['refresh'] = function () {
     var tags = $('script[tags]').attr('tags');
     if(typeof tags != 'undefined') {
         $(document).bind('mobileinit', function () {
+            $.extend($['mobile'].zoom, {
+                locked: true,
+                enabled: false
+            });
+            $['mobile'].buttonMarkup.hoverDelay = 0;
+            $['mobile'].touchOverflowEnabled = true;
+            $['mobile'].defaultPageTransition = 'slide';
+            $['mobile'].page.prototype.options.addBackBtn = true;
             $['mobile'].autoInitializePage = false;
+            $['mobile'].hashListeningEnabled = false;
+
             $.get(tags)['success'](function (data) {
+                // Let old IE know TEMPLATE
+                TagUtils.createElement('TEMPLATE');
+
                 $.gk['def'](data);
                 $('[gk-app]').each(function (idx, ele) {
                     var html = $.gk['toHTML']($(ele).html());
                     $(ele).html(html.innerHTML);
-                    $['mobile'].initializePage();
                 });
+                $['mobile'].initializePage();
             });
         });
     }
