@@ -1,4 +1,3 @@
-
 <gk:element name='NavBtn'>
   <gk:view use='NavBtn'>
 <li>
@@ -63,12 +62,12 @@ ${content}
 ListView.prototype._init = function(){
   this.data = [];
   this.autodividers = this.ele.attr('autodividers');
-if('${autodividers}'!==this.ele.attr('autodividers')){
-	this.ele.attr('data-autodividers','true');
-}
-if('${inset}'===this.ele.attr('data-inset')){
-	this.ele.removeAttr('data-inset');
-}
+  if('${autodividers}'!==this.ele.attr('autodividers')){
+	  this.ele.attr('data-autodividers','true');
+  }
+  if('${inset}'===this.ele.attr('data-inset')){
+	  this.ele.removeAttr('data-inset');
+  }
   if(typeof this.ready !== 'undefined'){
 	  this.ready();
   }
@@ -81,35 +80,35 @@ ListView.prototype.onclick = function(e){
   }
 };
 ListView.prototype.info = function (infoArray) {
-	if(infoArray) {
-		var self = this;
-	  	this.data = infoArray;
-		var listItem = _super.prototype.infoArray.call(this, infoArray);
-		$('#' + this.id).html(listItem);
-		try  {
-			this.ele.listview({
-			autodividersSelector: function (li) {
-				return  self.autodividers==='${autodividers}' ?
-						null:li.attr(self.autodividers);
-			}});
-			this.ele.listview('refresh');
-		} catch (e) {
-		}
-	} else {
-		return this.data;
+  if(infoArray) {
+	var self = this;
+	this.data = infoArray;
+	var listItem = _super.prototype.infoArray.call(this, infoArray);
+	$('#' + this.id).html(listItem);
+	try  {
+	  this.ele.listview({
+		autodividersSelector: function (li) {
+		  return  self.autodividers==='${autodividers}' ?
+			null:li.attr(self.autodividers);
+		}});
+	  this.ele.listview('refresh');
+	} catch (e) {
 	}
+  } else {
+	return this.data;
+  }
 };
 ListView.prototype.add = function (obj) {
-	this.data.push(obj);
-	this.info(this.data);
-	return this;
+  this.data.push(obj);
+  this.info(this.data);
+  return this;
 };
 ListView.prototype.remove = function (removeObj) {
-	var removeJSONObj = JSON.stringify(removeObj);
-	this.info($.grep(this.data, function (obj) {
-		return removeJSONObj == JSON.stringify(obj);
-	}, true));
-	return this;
+  var removeJSONObj = JSON.stringify(removeObj);
+  this.info($.grep(this.data, function (obj) {
+	return removeJSONObj == JSON.stringify(obj);
+  }, true));
+  return this;
 };
   </gk:component>
 </gk:element>
@@ -520,7 +519,7 @@ Icon.prototype.count = function(i){
 if(i){
   this.ele.prev().css('display',i==0? 'none':'');
   this._count = i;
-  this.ele.prev().html(''+i);
+  this.ele.prev().html(i<10 ? '&nbsp;'+i+'&nbsp;':i);
 }else { return this._count;};
 };
 Icon.prototype.text = function(txt){
@@ -537,13 +536,11 @@ Icon.prototype.text = function(txt){
 
 <gk:element name='GKStyle'>
   <gk:view use='GKStyle'>
-<div class='gkStyleTempClass' style='display:none'>aaa</div>
-<style>
-  ${content}
-</style>
+<div class='gkStyleTempClass' style='display:none'>a</div>
+<style>${content}</style>
   </gk:view>
   <gk:component>
-GKStyle.prototype.init = function(){
+GKStyle.prototype._init = function(){
   $('.gkStyleTempClass').remove();
 };
 
@@ -683,5 +680,3 @@ return barchart;
 };
   </gk:component>
 </gk:element>
-
-

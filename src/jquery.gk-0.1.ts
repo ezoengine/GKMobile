@@ -3,6 +3,7 @@ class WebComponent {
     ele;
     id:string;
     static gkm:string;
+    _init(){}
     init(){}
     constructor(args?:string) {
         this.id = args;
@@ -10,6 +11,20 @@ class WebComponent {
         var className = this.className();
         this.ele = $('#'+this.id);
         this.bindEvent();
+    }
+    removeDefAttr(ele,attr){
+        if(arguments.length==1){
+          attr = ele;
+          ele = this.ele;
+        }
+        if(typeof attr === 'string') {
+            attr = [attr];
+        }
+        for(var i in attr) {
+            if('${' + attr[i] + '}' === this.ele.attr(attr[i])) {
+                this.ele.removeAttr(attr[i]);
+            }
+        }
     }
     replaceAttr(key:string,srcVal:string,repVal:string){
         if(this.ele.attr(key)==srcVal){
@@ -67,7 +82,7 @@ class WebComponent {
             replaceHTML += _newHTML;
         });
         replaceHTML = $.gk['toHTML'](replaceHTML);
-        return $(replaceHTML).html();       
+        return replaceHTML;       
     }
     infoObject(info:Object):any{
         var replaceHTML = '';
@@ -81,7 +96,7 @@ class WebComponent {
         }
         replaceHTML += _newHTML;
         replaceHTML = $.gk['toHTML'](replaceHTML);
-        return $(replaceHTML).html();       
+        return replaceHTML;       
     }
     template(html?:string):string{
         if(html){
@@ -214,7 +229,7 @@ class CustomTag {
         //
         var newHTML = html;
         var repHTML = TagUtils.innerHTML(this.processTagElement);
-        window[clazz].gkm = repHTML;
+        if(window[clazz]) window[clazz].gkm = repHTML;
         //replace ${gkm} 
         newHTML = newHTML.replace(TagLibrary.gkm,repHTML);
         //replace ele attributes
@@ -317,7 +332,7 @@ $.gk = function(selector?) {
                 return $(selector);
             }else{
                 var gul = $(selector).html();
-                var html = $.gk['toHTML'](gul).innerHTML;
+                var html = $.gk['toHTML'](gul);
                 return html;
           }
         },
@@ -346,9 +361,9 @@ $.gk['toHTML'] = function(html){
         script = '<div id="' + id + '" style="display:none">for old IE</div>' + '<script>$("#' + id + '").remove();</script>' + script;
     }
     var newGKObj = (TagLibrary.eventStore['script'] || []).join(' ');
-    ele.innerHTML = script + ele.innerHTML + '<script>' + newGKObj + '</script>';
+    var val = script + ele.innerHTML + '<script>' + newGKObj + '</script>';
     TagLibrary.eventStore['script'] = [];
-    return ele;
+    return val;
 }
 /*
 $.gk['tmpl'] = function(arg0,arg1){
@@ -375,6 +390,7 @@ $.gk['com'] = function(id,obj){
                 }
             }
         }
+        obj['_init']();
         obj['init']();
     }else{
         return $('#'+id).data(TagLibrary.DATAKEY);       
@@ -384,26 +400,27 @@ $.gk['com'] = function(id,obj){
 $.gk['def'] = function(data){
     var div = TagUtils.createDIVWrapper(data);
     $.each($(div).children(), function (idx, ele) {
-    var clazz = $(ele).attr('name');
-    var tagName = $(ele).attr('name').toUpperCase();
-    if($(ele).children().length == 2) {
-        var scriptHead = "var " + clazz + " = (function (_super) {__extends(" + clazz + ", _super);function " + clazz + "(id) {_super.call(this, id);} ";
-        var scriptFooter = "return " + clazz + ";})(WebComponent);";
-        //var script = $($(ele).children()[1]).html();
-        var script = ele.children[1].innerText;
-        script = scriptHead + script + scriptFooter;
-        var headID = document.getElementsByTagName("head")[0];
-        var newScript = document.createElement('script');
-        newScript['type'] = 'text/javascript';
-        newScript['text'] = script;
-        headID.appendChild(newScript);
-    }
-    var view = $(ele).children()[0];
-    if(view.innerHTML.indexOf(TagLibrary.gkm) < 0) {
-        $(view).append(TagLibrary.gkm);
-    }
-    TagLibrary.customTags[tagName] = view;
-    TagUtils.createElement(tagName);
+        var $ele = $(ele);
+        var $eleChilds = $ele.children();
+        var clazz = $ele.attr('name');
+        var tagName = $ele.attr('name').toUpperCase();
+        if($eleChilds.length == 2) {
+            var scriptHead = "var " + clazz + " = (function (_super) {__extends(" + clazz + ", _super);function " + clazz + "(id) {_super.call(this, id);} ";
+            var scriptFooter = "return " + clazz + ";})(WebComponent);";
+            var script = $($eleChilds[1]).text();
+            script = scriptHead + script + scriptFooter;
+            var headID = document.getElementsByTagName("head")[0];
+            var newScript = document.createElement('script');
+            newScript['type'] = 'text/javascript';
+            newScript['text'] = script;
+            headID.appendChild(newScript);
+        }
+        var view = $eleChilds[0];
+        if(view.innerHTML.indexOf(TagLibrary.gkm) < 0) {
+            $(view).append(TagLibrary.gkm);
+        }
+        TagLibrary.customTags[tagName] = view;
+        TagUtils.createElement(tagName);
     });
     $.gk['taglib'] = $.gk['taglib'] || new TagLibrary();
 }
@@ -434,19 +451,26 @@ $.gk['refresh'] = function(){};
         return firstResult;
     };
 })(jQuery);
-(function(){
-  var tags = $('script[tags]').attr('tags');
-  if(typeof tags != 'undefined'){
-      $(document).bind('mobileinit', function () {
-          $['mobile'].autoInitializePage = false;
-          $.get(tags)['success'](function (data) {
-              $.gk['def'](data);
-              $('[gk-app]').each(function (idx, ele) {
-                  var html = $.gk['toHTML']($(ele).html());
-                  $(ele).html(html.innerHTML);
-                  $['mobile'].initializePage();
-              });
-          });
-      });
-  }
+(function () {
+    var tags = $('script[tags]').attr('tags');
+    if(typeof tags != 'undefined') {
+        $(document).bind('mobileinit', function () {
+            $.extend($['mobile'].zoom, {locked:true,enabled:false});
+            $['mobile'].buttonMarkup.hoverDelay = 0;
+            $['mobile'].touchOverflowEnabled = true;
+            $['mobile'].defaultPageTransition = 'slide';
+            $['mobile'].page.prototype.options.addBackBtn = true;
+            $['mobile'].autoInitializePage = false;
+            $['mobile'].hashListeningEnabled = false;
+            $.get(tags)['success'](function (data) {
+                TagUtils.createElement('TEMPLATE');
+                $.gk['def'](data);
+                $('[gk-app]').each(function (idx, ele) {
+                    var html = $.gk['toHTML']($(ele).html());
+                    $(ele).html(html);
+                });
+                $['mobile'].initializePage();
+            });
+        });
+    }
 })();
