@@ -1,4 +1,6 @@
-GKMobile
+GKMobile 
+======== 
+許益祥 Marty.shu@gmail.com
 ========
 
 **Why use GKMobile?**  
