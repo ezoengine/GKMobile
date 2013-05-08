@@ -12,8 +12,5 @@ WebSite: http://goo.gl/mOhVj
 Youtube: http://goo.gl/qqmpJ  
 For fun: http://goo.gl/h0cXz  
   
-  
-jquery.gkm-0.1.js  = jquery.gk-0.1.js + customTags.html
-
 
 
